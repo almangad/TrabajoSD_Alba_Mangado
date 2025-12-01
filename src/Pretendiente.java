@@ -17,4 +17,37 @@ public class Pretendiente {
         this.genero = genero;
         this.dinastia = dinastia;
     }
+
+    public String getNombreCompleto() {
+        return nombreCompleto;
+    }
+
+    public String getPretension() {
+        return pretension;
+    }
+    public void setPretension(String pretension) {
+        this.pretension = pretension;
+    }
+
+    public String getCuriosidad() {
+        return curiosidad;
+    }
+    public void setCuriosidad(String curiosidad) {
+        this.curiosidad = curiosidad;
+    }
+
+    public String getNacimiento() {
+        return nacimiento;
+    }
+    public void setNacimiento(String nacimiento) {
+        this.nacimiento = nacimiento;
+    }
+
+    public Genero getGenero() {
+        return genero;
+    }
+
+    public Dinastia getDinastia() {
+        return dinastia;
+    }
 }
