@@ -1,25 +1,23 @@
 package src;
 
-public class Pretendiente {
-    private String nombreCompleto;
-    private String pretension;
-    private String curiosidad;
-    private String nacimiento;
+import java.io.Serializable;
 
-    private Genero genero;
-    private Dinastia dinastia;
+public class Pretendiente extends Persona implements Serializable {
+    private String pretension;
 
     public Pretendiente(String nombreCompleto, String nacimiento, Genero genero, Dinastia dinastia) {
-        this.nombreCompleto = nombreCompleto;
+        super(nombreCompleto, nacimiento, genero, dinastia);
         this.pretension = "";
-        this.curiosidad = "";
-        this.nacimiento = nacimiento;
-        this.genero = genero;
-        this.dinastia = dinastia;
     }
 
-    public String getNombreCompleto() {
-        return nombreCompleto;
+    public Pretendiente(String nombreCompleto, String curiosidad, String nacimiento, Genero genero, Dinastia dinastia, String pretension) {
+        super(nombreCompleto, curiosidad, nacimiento, genero, dinastia);
+        this.pretension = pretension;
+    }
+
+    public Pretendiente(String nombreCompleto, String nacimiento, Genero genero, Dinastia dinastia, String pretension) {
+        super(nombreCompleto, nacimiento, genero, dinastia);
+        this.pretension = pretension;
     }
 
     public String getPretension() {
@@ -27,27 +25,5 @@ public class Pretendiente {
     }
     public void setPretension(String pretension) {
         this.pretension = pretension;
-    }
-
-    public String getCuriosidad() {
-        return curiosidad;
-    }
-    public void setCuriosidad(String curiosidad) {
-        this.curiosidad = curiosidad;
-    }
-
-    public String getNacimiento() {
-        return nacimiento;
-    }
-    public void setNacimiento(String nacimiento) {
-        this.nacimiento = nacimiento;
-    }
-
-    public Genero getGenero() {
-        return genero;
-    }
-
-    public Dinastia getDinastia() {
-        return dinastia;
     }
 }

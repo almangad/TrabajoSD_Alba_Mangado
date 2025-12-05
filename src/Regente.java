@@ -1,15 +1,12 @@
 package src;
 
-public class Regente {
-    private String nombreCompleto;
-    private String apodo;
-    private String curiosidad;
-    private String nacimiento;
+import java.io.Serializable;
 
-    private Genero genero;
+public class Regente extends Persona implements Serializable {
+    private String apodo;
+
     private int inicioReinado;
     private int finReinado;
-    private Dinastia dinastia;
 
     private boolean LaRioja;
     private boolean BajaNavarra;
@@ -19,14 +16,10 @@ public class Regente {
     private boolean Leon;
 
     public Regente(String nombreCompleto, String apodo, String nacimiento, Genero genero, Dinastia dinastia) {
-        this.nombreCompleto = nombreCompleto;
+        super(nombreCompleto, apodo, nacimiento, genero, dinastia);
         this.apodo = apodo;
-        this.curiosidad = "";
-        this.nacimiento = nacimiento;
-        this.genero = genero;
         this.inicioReinado = -1;
         this.finReinado = -1;
-        this.dinastia = dinastia;
 
         this.LaRioja = false;
         this.BajaNavarra = false;
@@ -36,30 +29,21 @@ public class Regente {
         this.Leon = false;
     }
 
-    public String getNombreCompleto() {
-        return nombreCompleto;
+    public Regente(String nombreCompleto, String curiosidad, String nacimiento, Genero genero, Dinastia dinastia, String apodo, int finReinado, int inicioReinado, boolean laRioja, boolean bajaNavarra, boolean francia, boolean aragon, boolean leon, boolean castilla) {
+        super(nombreCompleto, curiosidad, nacimiento, genero, dinastia);
+        this.apodo = apodo;
+        this.finReinado = finReinado;
+        this.inicioReinado = inicioReinado;
+        LaRioja = laRioja;
+        BajaNavarra = bajaNavarra;
+        Francia = francia;
+        Aragon = aragon;
+        Leon = leon;
+        Castilla = castilla;
     }
 
     public String getApodo() {
         return apodo;
-    }
-
-    public String getCuriosidad() {
-        return curiosidad;
-    }
-    public void setCuriosidad(String curiosidad) {
-        this.curiosidad = curiosidad;
-    }
-
-    public String getNacimiento() {
-        return nacimiento;
-    }
-    public void setNacimiento(String nacimiento) {
-        this.nacimiento = nacimiento;
-    }
-
-    public Genero getGenero() {
-        return genero;
     }
 
     public int getInicioReinado() {
@@ -74,10 +58,6 @@ public class Regente {
     }
     public void setFinReinado(int finReinado) {
         this.finReinado = finReinado;
-    }
-
-    public Dinastia getDinastia() {
-        return dinastia;
     }
 
     public boolean isLaRioja() {
