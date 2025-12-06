@@ -1,5 +1,16 @@
 package src;
 
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.net.Socket;
 
@@ -9,6 +20,19 @@ public class Menu extends Thread {
 
     public Menu(Socket socket) {
         this.s = socket;
+    }
+
+    private Document descargarBD() throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        return db.parse(xml);
+    }
+    private void cargarBD(Document doc) throws TransformerException {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer t = tf.newTransformer();
+        DOMSource s = new DOMSource(doc);
+        StreamResult res = new StreamResult(xml);
+        t.transform(s, res);
     }
 
     public void run() {
@@ -80,7 +104,7 @@ public class Menu extends Thread {
         }
     }
     public void añadirRegente(Regente regente){}
-    public void añadirPretendiente(Pretendiente pretendiente){}
+    public synchronized void añadirPretendiente(Pretendiente pretendiente){}
     public boolean eliminar(String nombre){return false;}
     public String getCuriosidad(String nombre){return null;}
     public String getPretension(String pretendiente){return null;}
