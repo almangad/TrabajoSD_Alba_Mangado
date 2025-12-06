@@ -2,6 +2,7 @@ package src;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -82,10 +83,7 @@ public class Menu extends Thread {
                         w.write("Indique el nombre completo\n");
                         w.flush();
                         linea = ios.readLine();
-                        if (!eliminar(linea)){
-                            w.write("Persona no encontrada en la base de datos\n");
-                            w.flush();
-                        }
+                        eliminar(linea);
                         break;
                     }
                     case 3:{
@@ -101,6 +99,7 @@ public class Menu extends Thread {
                         w.flush();
                         linea = ios.readLine();
                         w.write(getPretension(linea) + "\n");
+                        w.flush();
                         break;
                     }
                 }
@@ -209,7 +208,7 @@ public class Menu extends Thread {
             throw new RuntimeException(e);
         }
     }
-    public boolean eliminar(String nombre){
+    public void eliminar(String nombre){
         try {
             semaphore.acquire();
             Document doc = descargarBD();
@@ -220,6 +219,7 @@ public class Menu extends Thread {
                     doc.removeChild(l.item(i).getParentNode());
                 }
             }
+            cargarBD(doc);
             semaphore.release();
         } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);
@@ -229,8 +229,62 @@ public class Menu extends Thread {
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        } catch (TransformerException e) {
+            throw new RuntimeException(e);
         }
     }
-    public String getCuriosidad(String nombre){return null;}
-    public String getPretension(String pretendiente){return null;}
+    public String getCuriosidad(String nombre){
+        try {
+            Document doc = descargarBD();
+            NodeList l = doc.getElementsByTagName("nombreCompleto"), hijos;
+            Element e;
+            Node n;
+
+            for (int i = 0; i < l.getLength(); i++) {
+                if (l.item(i).getTextContent().equals(nombre)){
+                    e = (Element) l.item(i).getParentNode();
+                    hijos = e.getChildNodes();
+                    for (int j = 0; j < hijos.getLength(); j++) {
+                        n   =  hijos.item(j);
+                        if ((n.getNodeType()== Node.ELEMENT_NODE) && (n.getNodeName().equals("curiosidad"))){
+                            return n.getTextContent();
+                        }
+                    }
+                }
+            }
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
+        return "La persona indicada no tiene ninguna curiosidad";
+    }
+    public String getPretension(String nombre){try {
+        Document doc = descargarBD();
+        NodeList l = doc.getElementsByTagName("nombreCompleto"), hijos;
+        Element e;
+        Node n;
+
+        for (int i = 0; i < l.getLength(); i++) {
+            if (l.item(i).getTextContent().equals(nombre)){
+                e = (Element) l.item(i).getParentNode();
+                hijos = e.getChildNodes();
+                for (int j = 0; j < hijos.getLength(); j++) {
+                    n   =  hijos.item(j);
+                    if ((n.getNodeType()== Node.ELEMENT_NODE) && (n.getNodeName().equals("pretension"))){
+                        return n.getTextContent();
+                    }
+                }
+            }
+        }
+    } catch (ParserConfigurationException e) {
+        throw new RuntimeException(e);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    } catch (SAXException e) {
+        throw new RuntimeException(e);
+    }
+        return "La persona no se trata de un pretendiente";}
 }
