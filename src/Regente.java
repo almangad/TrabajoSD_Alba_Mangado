@@ -5,8 +5,8 @@ import java.io.Serializable;
 public class Regente extends Persona implements Serializable {
     private String apodo;
 
-    private int inicioReinado;
-    private int finReinado;
+    private String inicioReinado;
+    private String finReinado;
 
     private boolean LaRioja;
     private boolean BajaNavarra;
@@ -18,8 +18,8 @@ public class Regente extends Persona implements Serializable {
     public Regente(String nombreCompleto, String apodo, String nacimiento, Genero genero, Dinastia dinastia) {
         super(nombreCompleto, apodo, nacimiento, genero, dinastia);
         this.apodo = apodo;
-        this.inicioReinado = -1;
-        this.finReinado = -1;
+        this.inicioReinado = "";
+        this.finReinado = "";
 
         this.LaRioja = false;
         this.BajaNavarra = false;
@@ -29,7 +29,7 @@ public class Regente extends Persona implements Serializable {
         this.Leon = false;
     }
 
-    public Regente(String nombreCompleto, String curiosidad, String nacimiento, Genero genero, Dinastia dinastia, String apodo, int finReinado, int inicioReinado, boolean laRioja, boolean bajaNavarra, boolean francia, boolean aragon, boolean leon, boolean castilla) {
+    public Regente(String nombreCompleto, String curiosidad, String nacimiento, Genero genero, Dinastia dinastia, String apodo, String finReinado, String inicioReinado, boolean laRioja, boolean bajaNavarra, boolean francia, boolean aragon, boolean leon, boolean castilla) {
         super(nombreCompleto, curiosidad, nacimiento, genero, dinastia);
         this.apodo = apodo;
         this.finReinado = finReinado;
@@ -46,17 +46,17 @@ public class Regente extends Persona implements Serializable {
         return apodo;
     }
 
-    public int getInicioReinado() {
+    public String getInicioReinado() {
         return inicioReinado;
     }
-    public void setInicioReinado(int inicioReinado) {
+    public void setInicioReinado(String inicioReinado) {
         this.inicioReinado = inicioReinado;
     }
 
-    public int getFinReinado() {
+    public String getFinReinado() {
         return finReinado;
     }
-    public void setFinReinado(int finReinado) {
+    public void setFinReinado(String finReinado) {
         this.finReinado = finReinado;
     }
 
