@@ -2,6 +2,7 @@ package src;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -39,9 +40,11 @@ public class Menu extends Thread {
     }
 
     public void run() {
-        String menu = "Seleccione una opcion :\n" + "0.Salir \n" + "1.Añadir un regente o pretendiente \n" +
-                        "2.Eliminar un regente o pretendiente\n" + "3.Ver una curiosidad" +
-                        "4.Ver la pretension al trono de un pretendiente";
+        String menu = "Seleccione una opcion :\n" + "0.Salir \n"
+                + "1.Añadir un regente o pretendiente \n"
+                + "2.Eliminar un regente o pretendiente\n"
+                + "3.Ver una curiosidad"
+                + "4.Ver la pretension al trono de un pretendiente";
         String linea = "";
         int n, m;
         boolean continuar = true;
@@ -206,7 +209,28 @@ public class Menu extends Thread {
             throw new RuntimeException(e);
         }
     }
-    public boolean eliminar(String nombre){return false;}
+    public boolean eliminar(String nombre){
+        try {
+            semaphore.acquire();
+            Document doc = descargarBD();
+            NodeList l = doc.getElementsByTagName("nombreCompleto");
+
+            for (int i = 0; i < l.getLength(); i++) {
+                if (l.item(i).getTextContent().equals(nombre)){
+                    doc.removeChild(l.item(i).getParentNode());
+                }
+            }
+            semaphore.release();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public String getCuriosidad(String nombre){return null;}
     public String getPretension(String pretendiente){return null;}
 }
