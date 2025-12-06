@@ -16,6 +16,10 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
 public class Menu extends Thread {
@@ -45,7 +49,10 @@ public class Menu extends Thread {
                 + "1.Añadir un regente o pretendiente \n"
                 + "2.Eliminar un regente o pretendiente\n"
                 + "3.Ver una curiosidad"
-                + "4.Ver la pretension al trono de un pretendiente";
+                + "4.Ver la pretension al trono de un pretendiente"
+                + "5.Ver informacion sobre el nacimiento"
+                + "6.Buscar apodo de un regente"
+                + "7.Ver los miembros de las dinastias";
         String linea = "";
         int n, m;
         boolean continuar = true;
@@ -99,6 +106,28 @@ public class Menu extends Thread {
                         w.flush();
                         linea = ios.readLine();
                         w.write(getPretension(linea) + "\n");
+                        w.flush();
+                        break;
+                    }
+                    case 5:{
+                        w.write("Indique el nombre completo\n");
+                        w.flush();
+                        linea = ios.readLine();
+                        w.write(getNacimiento(linea) + "\n");
+                        w.flush();
+                        break;
+                    }
+                    case 6:{
+                        w.write("Indique el nombre completo\n");
+                        w.flush();
+                        linea = ios.readLine();
+                        w.write(getApodo(linea) + "\n");
+                        w.flush();
+                        break;
+                    }
+                    case 7:{
+                        String mienbros = Dinastias();
+                        w.write(mienbros);
                         w.flush();
                         break;
                     }
@@ -261,30 +290,118 @@ public class Menu extends Thread {
         }
         return "La persona indicada no tiene ninguna curiosidad";
     }
-    public String getPretension(String nombre){try {
-        Document doc = descargarBD();
-        NodeList l = doc.getElementsByTagName("nombreCompleto"), hijos;
-        Element e;
-        Node n;
+    public String getPretension(String nombre){
+        try {
+            Document doc = descargarBD();
+            NodeList l = doc.getElementsByTagName("nombreCompleto"), hijos;
+            Element e;
+            Node n;
 
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getTextContent().equals(nombre)){
-                e = (Element) l.item(i).getParentNode();
-                hijos = e.getChildNodes();
-                for (int j = 0; j < hijos.getLength(); j++) {
-                    n   =  hijos.item(j);
-                    if ((n.getNodeType()== Node.ELEMENT_NODE) && (n.getNodeName().equals("pretension"))){
-                        return n.getTextContent();
+            for (int i = 0; i < l.getLength(); i++) {
+                if (l.item(i).getTextContent().equals(nombre)){
+                    e = (Element) l.item(i).getParentNode();
+                    hijos = e.getChildNodes();
+                    for (int j = 0; j < hijos.getLength(); j++) {
+                        n   =  hijos.item(j);
+                        if ((n.getNodeType()== Node.ELEMENT_NODE) && (n.getNodeName().equals("pretension"))){
+                            return n.getTextContent();
+                        }
                     }
                 }
             }
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
         }
-    } catch (ParserConfigurationException e) {
-        throw new RuntimeException(e);
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-    } catch (SAXException e) {
-        throw new RuntimeException(e);
+        return "La persona no se trata de un pretendiente";
     }
-        return "La persona no se trata de un pretendiente";}
+    public String getNacimiento(String nombre){
+        try {
+            Document doc = descargarBD();
+            NodeList l = doc.getElementsByTagName("nombreCompleto"), hijos;
+            Element e;
+            Node n;
+
+            for (int i = 0; i < l.getLength(); i++) {
+                if (l.item(i).getTextContent().equals(nombre)){
+                    e = (Element) l.item(i).getParentNode();
+                    hijos = e.getChildNodes();
+                    for (int j = 0; j < hijos.getLength(); j++) {
+                        n   =  hijos.item(j);
+                        if ((n.getNodeType()== Node.ELEMENT_NODE) && (n.getNodeName().equals("nacimiento"))){
+                            return n.getTextContent();
+                        }
+                    }
+                }
+            }
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
+        return "Persona no encontrada";
+    }
+    public String getApodo(String nombre){
+        try {
+            Document doc = descargarBD();
+            NodeList l = doc.getElementsByTagName("nombreCompleto"), hijos;
+            Element e;
+            Node n;
+
+            for (int i = 0; i < l.getLength(); i++) {
+                if (l.item(i).getTextContent().equals(nombre)){
+                    e = (Element) l.item(i).getParentNode();
+                    hijos = e.getChildNodes();
+                    for (int j = 0; j < hijos.getLength(); j++) {
+                        n   =  hijos.item(j);
+                        if ((n.getNodeType()== Node.ELEMENT_NODE) && (n.getNodeName().equals("apodo"))){
+                            return n.getTextContent();
+                        }
+                    }
+                }
+            }
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
+        return "Persona no encontrada";
+    }
+    public String Dinastias(){
+        String respuesta = "";
+        try {
+            List<BuscaDinastias> hilos = new ArrayList<>();
+            BuscaDinastias aux;
+            Document doc = descargarBD();
+            NodeList l = doc.getElementsByTagName("dinastia");
+
+            for (Dinastia d : Dinastia.values()){
+                aux = new BuscaDinastias(d, l);
+                aux.start();
+                hilos.add(aux);
+            }
+            for (BuscaDinastias d : hilos){
+                d.join();
+            }
+            for (BuscaDinastias d : hilos){
+                respuesta += d.getRes();
+            }
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return respuesta;
+    }
 }
