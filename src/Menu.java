@@ -52,7 +52,9 @@ public class Menu extends Thread {
                 + "4.Ver la pretension al trono de un pretendiente"
                 + "5.Ver informacion sobre el nacimiento"
                 + "6.Buscar apodo de un regente"
-                + "7.Ver los miembros de las dinastias";
+                + "7.Ver los miembros de las dinastias"
+                + "8.Comparacion por género"
+                + "9.¿Quien reinaba entonces?";
         String linea = "";
         int n, m;
         boolean continuar = true;
@@ -128,6 +130,20 @@ public class Menu extends Thread {
                     case 7:{
                         String mienbros = Dinastias();
                         w.write(mienbros);
+                        w.flush();
+                        break;
+                    }
+                    case 8:{
+                        String gen = RegentesGenero();
+                        w.write(gen);
+                        w.flush();
+                        break;
+                    }
+                    case 9:{
+                        w.write("Indique el año sobre el que esté buscando\n");
+                        w.flush();
+                        m = ios.readInt();
+                        w.write(getRegente(m) + "\n");
                         w.flush();
                         break;
                     }
@@ -403,5 +419,69 @@ public class Menu extends Thread {
             throw new RuntimeException(e);
         }
         return respuesta;
+    }
+    public String RegentesGenero(){
+        int h=0, m=0;
+        try {
+            Document doc = descargarBD();
+            NodeList l = doc.getElementsByTagName("genero");
+            for (int i = 0; i < l.getLength(); i++) {
+                if (l.item(i).getTextContent().equals("rey")){
+                    h++;
+                }
+                if (l.item(i).getTextContent().equals("reina")){
+                    m++;
+                }
+            }
+
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
+        return "Reyes: " + h + "; Reinaes: " + m;
+    }
+    public String getRegente(int f){
+        try {
+            Document doc = descargarBD();
+            NodeList l = doc.getElementsByTagName("regente"), hijos;
+            Element e;
+            Node n;
+            String nombre = "", apodo = "", ini, fin;
+            boolean encontrado = false;
+            
+            for (int i = 0; i < l.getLength(); i++) {
+                e = (Element) l.item(i);
+                ini = e.getAttribute("inicioReinado");
+                fin = e.getAttribute("finReinado");
+                if((Integer.parseInt(ini)<f)&&(Integer.parseInt(fin)>f)){
+                    encontrado = true;
+                    hijos = e.getChildNodes();
+                    for (int j = 0; j < hijos.getLength(); j++) {
+                        n   =  hijos.item(j);
+                        if ((n.getNodeType()== Node.ELEMENT_NODE) && (n.getNodeName().equals("nombreCompleto"))){
+                            nombre = n.getTextContent();
+                        }
+                        if ((n.getNodeType()== Node.ELEMENT_NODE) && (n.getNodeName().equals("apodo"))){
+                            nombre = n.getTextContent();
+                        }
+                    }
+                }
+            }
+            
+            if (encontrado){
+                return nombre + "" + apodo;
+            }else {
+                return "En esa fecha no había un soberano en el Reino";
+            }
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
