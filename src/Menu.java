@@ -54,7 +54,8 @@ public class Menu extends Thread {
                 + "6.Buscar apodo de un regente"
                 + "7.Ver los miembros de las dinastias"
                 + "8.Comparacion por género"
-                + "9.¿Quien reinaba entonces?";
+                + "9.¿Quien reinaba entonces?"
+                + "10.¿Quien reino en un territorio?";
         String linea = "";
         int n, m;
         boolean continuar = true;
@@ -144,6 +145,15 @@ public class Menu extends Thread {
                         w.flush();
                         m = ios.readInt();
                         w.write(getRegente(m) + "\n");
+                        w.flush();
+                        break;
+                    }
+                    case 10:{
+                        w.write("Indique el territorio sobre el que desea conocer sus gobernantes\n");
+                        w.write("Los posibles territorios a elegir son: LaRioja, BajaNavarra, Francia, Aragon, Castilla, Leon\n");
+                        w.flush();
+                        linea = ios.readLine();
+                        w.write(getTerritorio(linea) + "\n");
                         w.flush();
                         break;
                     }
@@ -483,5 +493,36 @@ public class Menu extends Thread {
         } catch (SAXException e) {
             throw new RuntimeException(e);
         }
+    }
+    public String getTerritorio(String p){
+        try {
+            String res = "", apodo = "", nombre="";
+            Document doc = descargarBD();
+            NodeList l = doc.getElementsByTagName("p"), hijos;
+            Element e;
+            Node n;
+
+            for (int i = 0; i < l.getLength(); i++) {
+                e = (Element) l.item(i).getParentNode();
+                hijos = e.getChildNodes();
+                for (int j = 0; j < hijos.getLength(); j++) {
+                    n = hijos.item(j);
+                    if ((n.getNodeType() == Node.ELEMENT_NODE) && (n.getNodeName().equals("apodo"))) {
+                        apodo = n.getTextContent();
+                    }
+                    if ((n.getNodeType() == Node.ELEMENT_NODE) && (n.getNodeName().equals("nombreCompleto"))) {
+                        nombre = n.getTextContent();
+                    }
+                }
+                res = res + nombre + " " + apodo + "\n";
+            }
+        } catch (ParserConfigurationException ex) {
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } catch (SAXException ex) {
+            throw new RuntimeException(ex);
+        }
+        return "El lugar indicado no perteneció al reino en ningun momento";
     }
 }
