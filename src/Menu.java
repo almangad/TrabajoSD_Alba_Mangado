@@ -18,70 +18,88 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
 public class Menu extends Thread {
     private Socket s;
-    private static final String xml = "/xml//ReinoNavarra.xml";
+    //Ruta al xml
+    private static final String xml = "ReinoNavarra.xml";
+    //Con un semaforo impedimos que dos sockets cambien a la vez la base de datos
     private static Semaphore semaphore = new Semaphore(1);
 
     public Menu(Socket socket) {
         this.s = socket;
     }
 
-    private Document descargarBD() throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        return db.parse(xml);
+    //Carga la base de datos exixtente
+    private Document descargarBD() {
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            File f = new File(xml);
+            return db.parse(f);
+        } catch (ParserConfigurationException | IOException | SAXException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
-    private void cargarBD(Document doc) throws TransformerException {
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer t = tf.newTransformer();
-        DOMSource s = new DOMSource(doc);
-        StreamResult res = new StreamResult(xml);
-        t.transform(s, res);
+    //Guarda la nueva bd
+    private void cargarBD(Document doc){
+        try {
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer t = tf.newTransformer();
+            DOMSource s = new DOMSource(doc);
+            StreamResult res = new StreamResult(xml);
+            t.transform(s, res);
+        } catch (TransformerException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     public void run() {
         String menu = "Seleccione una opcion :\n" + "0.Salir \n"
                 + "1.Añadir un regente o pretendiente \n"
                 + "2.Eliminar un regente o pretendiente\n"
-                + "3.Ver una curiosidad"
-                + "4.Ver la pretension al trono de un pretendiente"
-                + "5.Ver informacion sobre el nacimiento"
-                + "6.Buscar apodo de un regente"
-                + "7.Ver los miembros de las dinastias"
-                + "8.Comparacion por género"
-                + "9.¿Quien reinaba entonces?"
-                + "10.¿Quien reino en un territorio?";
-        String linea = "";
+                + "3.Ver una curiosidad\n"
+                + "4.Ver la pretension al trono de un pretendiente\n"
+                + "5.Ver informacion sobre el nacimiento\n"
+                + "6.Buscar apodo de un regente\n"
+                + "7.Ver los miembros de las dinastias\n"
+                + "8.Comparacion por género\n"
+                + "9.¿Quien reinaba entonces?\n"
+                + "10.¿Quien reino en un territorio?\n"
+                +"FIN\n";
+        //FIN es el indicativo del final
+        String leido = "", enviado="";
         int n, m;
         boolean continuar = true;
 
-        try(DataInputStream ios = new DataInputStream(s.getInputStream());
-            Writer w = new OutputStreamWriter(s.getOutputStream())) {
+        try(BufferedReader ios = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            BufferedWriter w = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()))) {
             while (continuar) {
                 w.write(menu);
                 w.flush();
 
-                n = ios.readInt();
+                leido = ios.readLine();
+                n = Integer.parseInt(leido);
                 switch (n){
                     case 0:
                         continuar = false;
                         break;
                     case 1:{
-                        w.write("   0.Regente\n" + "    1.Pretendirnte\n");
+                        w.write("   0.Regente\n" + "    1.Pretendirnte\n" + "FIN\n");
                         w.flush();
-                        m = ios.readInt();
+                        m = Integer.parseInt(ios.readLine());
                         try (ObjectInputStream ois = new ObjectInputStream(s.getInputStream())) {
                             switch (m){
                                 case 0:{
                                     añadirRegente((Regente) ois.readObject());
+                                    break;
                                 }
                                 case 1:{
                                     añadirPretendiente((Pretendiente) ois.readObject());
+                                    break;
                                 }
                             }
                         } catch (ClassNotFoundException e) {
@@ -92,58 +110,62 @@ public class Menu extends Thread {
                     case 2:{
                         w.write("Indique el nombre completo\n");
                         w.flush();
-                        linea = ios.readLine();
-                        eliminar(linea);
+                        leido = ios.readLine();
+                        eliminar(leido);
                         break;
                     }
                     case 3:{
                         w.write("Indique el nombre completo\n");
                         w.flush();
-                        linea = ios.readLine();
-                        w.write(getCuriosidad(linea) + "\n");
+                        leido = ios.readLine();
+                        enviado = getCuriosidad(leido);
+                        w.write(enviado + "\n");
                         w.flush();
                         break;
                     }
                     case 4:{
                         w.write("Indique el nombre completo\n");
                         w.flush();
-                        linea = ios.readLine();
-                        w.write(getPretension(linea) + "\n");
+                        leido = ios.readLine();
+                        enviado = getPretension(leido);
+                        w.write(enviado + "\n");
                         w.flush();
                         break;
                     }
                     case 5:{
                         w.write("Indique el nombre completo\n");
                         w.flush();
-                        linea = ios.readLine();
-                        w.write(getNacimiento(linea) + "\n");
+                        leido = ios.readLine();
+                        enviado = getNacimiento(leido);
+                        w.write(enviado + "\n");
                         w.flush();
                         break;
                     }
                     case 6:{
                         w.write("Indique el nombre completo\n");
                         w.flush();
-                        linea = ios.readLine();
-                        w.write(getApodo(linea) + "\n");
+                        leido = ios.readLine();
+                        enviado = getApodo(leido);
+                        w.write(enviado + "\n");
                         w.flush();
                         break;
                     }
                     case 7:{
-                        String mienbros = Dinastias();
-                        w.write(mienbros);
+                        enviado = Dinastias();
+                        w.write(enviado);
                         w.flush();
                         break;
                     }
                     case 8:{
-                        String gen = RegentesGenero();
-                        w.write(gen);
+                        enviado = RegentesGenero();
+                        w.write(enviado);
                         w.flush();
                         break;
                     }
                     case 9:{
                         w.write("Indique el año sobre el que esté buscando\n");
                         w.flush();
-                        m = ios.readInt();
+                        m = Integer.parseInt(ios.readLine());
                         w.write(getRegente(m) + "\n");
                         w.flush();
                         break;
@@ -152,21 +174,36 @@ public class Menu extends Thread {
                         w.write("Indique el territorio sobre el que desea conocer sus gobernantes\n");
                         w.write("Los posibles territorios a elegir son: LaRioja, BajaNavarra, Francia, Aragon, Castilla, Leon\n");
                         w.flush();
-                        linea = ios.readLine();
-                        w.write(getTerritorio(linea) + "\n");
+                        leido = ios.readLine();
+                        enviado = getTerritorio(leido);
+                        w.write(enviado + "FIN\n");
                         w.flush();
                         break;
                     }
+                    default:{
+                        w.write("Elección no válida\n");
+                        w.flush();
+                    }
                 }
             }
-        } catch (IOException e) {
+        }catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
+        }finally {
+            try {
+                s.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
         }
     }
+
     public void añadirRegente(Regente regente){
         try {
             semaphore.acquire();
             Document doc = descargarBD();
+            //Crea y completa el regente
             Element reg = doc.createElement("regente");
 
             Element nombre = doc.createElement("nombreCompleto");
@@ -181,6 +218,7 @@ public class Menu extends Thread {
             Element nacimiento = doc.createElement("nacimiento");
             nacimiento.setTextContent(regente.getNacimiento());
             reg.appendChild(nacimiento);
+
             if(regente.isLaRioja()){
                 Element rioja = doc.createElement("LaRioja");
                 reg.appendChild(rioja);
@@ -211,19 +249,14 @@ public class Menu extends Thread {
             reg.setAttribute("finReinado", regente.getFinReinado());
             reg.setAttribute("dinastia", regente.getDinastia().toString());
 
-            doc.appendChild(reg);
+            //Lo añade como hijo del elemento raiz
+            doc.getDocumentElement().appendChild(reg);
             cargarBD(doc);
-            semaphore.release();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
-        } catch (TransformerException e) {
-            throw new RuntimeException(e);
         } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
         }
     }
     public void añadirPretendiente(Pretendiente pretendiente){
@@ -248,19 +281,13 @@ public class Menu extends Thread {
             pret.setAttribute("genero", pretendiente.getGenero().toString());
             pret.setAttribute("dinastia", pretendiente.getDinastia().toString());
 
-            doc.appendChild(pret);
+            doc.getDocumentElement().appendChild(pret);
             cargarBD(doc);
-            semaphore.release();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (TransformerException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
         }
     }
     public void eliminar(String nombre){
@@ -268,28 +295,27 @@ public class Menu extends Thread {
             semaphore.acquire();
             Document doc = descargarBD();
             NodeList l = doc.getElementsByTagName("nombreCompleto");
+            Node p, r;
 
-            for (int i = 0; i < l.getLength(); i++) {
+            for (int i = l.getLength()-1; i >= 0; i--) {
+                //Busca el elemento con el nombreCompleto indicado
                 if (l.item(i).getTextContent().equals(nombre)){
-                    doc.removeChild(l.item(i).getParentNode());
+                    p=l.item(i).getParentNode();
+                    r=p.getParentNode();
+                    r.removeChild(p);
                 }
             }
             cargarBD(doc);
-            semaphore.release();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
         } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (TransformerException e) {
-            throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
         }
     }
     public String getCuriosidad(String nombre){
         try {
+            semaphore.acquire();
             Document doc = descargarBD();
             NodeList l = doc.getElementsByTagName("nombreCompleto"), hijos;
             Element e;
@@ -299,6 +325,7 @@ public class Menu extends Thread {
                 if (l.item(i).getTextContent().equals(nombre)){
                     e = (Element) l.item(i).getParentNode();
                     hijos = e.getChildNodes();
+                    //Busca ente los nodos hijos aquellos que sean elementos y tengan el nombre deseado
                     for (int j = 0; j < hijos.getLength(); j++) {
                         n   =  hijos.item(j);
                         if ((n.getNodeType()== Node.ELEMENT_NODE) && (n.getNodeName().equals("curiosidad"))){
@@ -307,17 +334,17 @@ public class Menu extends Thread {
                     }
                 }
             }
-        } catch (ParserConfigurationException e) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
         }
         return "La persona indicada no tiene ninguna curiosidad";
     }
     public String getPretension(String nombre){
         try {
+            semaphore.acquire();
             Document doc = descargarBD();
             NodeList l = doc.getElementsByTagName("nombreCompleto"), hijos;
             Element e;
@@ -335,17 +362,17 @@ public class Menu extends Thread {
                     }
                 }
             }
-        } catch (ParserConfigurationException e) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
         }
         return "La persona no se trata de un pretendiente";
     }
     public String getNacimiento(String nombre){
         try {
+            semaphore.acquire();
             Document doc = descargarBD();
             NodeList l = doc.getElementsByTagName("nombreCompleto"), hijos;
             Element e;
@@ -363,17 +390,17 @@ public class Menu extends Thread {
                     }
                 }
             }
-        } catch (ParserConfigurationException e) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
         }
         return "Persona no encontrada";
     }
     public String getApodo(String nombre){
         try {
+            semaphore.acquire();
             Document doc = descargarBD();
             NodeList l = doc.getElementsByTagName("nombreCompleto"), hijos;
             Element e;
@@ -391,27 +418,32 @@ public class Menu extends Thread {
                     }
                 }
             }
-        } catch (ParserConfigurationException e) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
         }
         return "Persona no encontrada";
     }
+    //Busca a los miembros de una dinastía con un hilo por dinastía
     public String Dinastias(){
         String respuesta = "";
         try {
+            semaphore.acquire();
             List<BuscaDinastias> hilos = new ArrayList<>();
-            BuscaDinastias aux;
+            BuscaDinastias aux, ay;
             Document doc = descargarBD();
-            NodeList l = doc.getElementsByTagName("dinastia");
+            NodeList r = doc.getElementsByTagName("regente");
+            NodeList p = doc.getElementsByTagName("pretendiente");
 
             for (Dinastia d : Dinastia.values()){
-                aux = new BuscaDinastias(d, l);
+                aux = new BuscaDinastias(d, r);
                 aux.start();
                 hilos.add(aux);
+                ay = new BuscaDinastias(d, p);
+                ay.start();
+                hilos.add(ay);
             }
             for (BuscaDinastias d : hilos){
                 d.join();
@@ -419,42 +451,44 @@ public class Menu extends Thread {
             for (BuscaDinastias d : hilos){
                 respuesta += d.getRes();
             }
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
         } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
+        }finally {
+            semaphore.release();
         }
-        return respuesta;
+        return respuesta + "FIN\n";
     }
+    //Devuelve el número de reyes y de reinas
     public String RegentesGenero(){
         int h=0, m=0;
         try {
+            semaphore.acquire();
             Document doc = descargarBD();
-            NodeList l = doc.getElementsByTagName("genero");
+            NodeList l = doc.getElementsByTagName("regente");
+            Element e;
+
             for (int i = 0; i < l.getLength(); i++) {
-                if (l.item(i).getTextContent().equals("rey")){
+                e = (Element) l.item(i);
+                if (e.getAttribute("genero").equals("rey")){
                     h++;
-                }
-                if (l.item(i).getTextContent().equals("reina")){
+                }else {
                     m++;
                 }
             }
 
-        } catch (ParserConfigurationException e) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
         }
-        return "Reyes: " + h + "; Reinaes: " + m;
+        return "Reyes: " + h + "; Reinaes: " + m + "\n";
     }
+    //Devuelve quien reinó en un año pasado com int
     public String getRegente(int f){
         try {
+            semaphore.acquire();
             Document doc = descargarBD();
             NodeList l = doc.getElementsByTagName("regente"), hijos;
             Element e;
@@ -475,30 +509,31 @@ public class Menu extends Thread {
                             nombre = n.getTextContent();
                         }
                         if ((n.getNodeType()== Node.ELEMENT_NODE) && (n.getNodeName().equals("apodo"))){
-                            nombre = n.getTextContent();
+                            apodo = n.getTextContent();
                         }
                     }
                 }
             }
             
             if (encontrado){
-                return nombre + "" + apodo;
+                return nombre + " " + apodo;
             }else {
                 return "En esa fecha no había un soberano en el Reino";
             }
-        } catch (ParserConfigurationException e) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
         }
     }
+    //Devuelve un String con los reyes que reinaron en un territorio didtinto a la Alta Navarra
     public String getTerritorio(String p){
         try {
+            semaphore.acquire();
             String res = "", apodo = "", nombre="";
             Document doc = descargarBD();
-            NodeList l = doc.getElementsByTagName("p"), hijos;
+            NodeList l = doc.getElementsByTagName(p), hijos;
             Element e;
             Node n;
 
@@ -516,13 +551,15 @@ public class Menu extends Thread {
                 }
                 res = res + nombre + " " + apodo + "\n";
             }
-        } catch (ParserConfigurationException ex) {
-            throw new RuntimeException(ex);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        } catch (SAXException ex) {
-            throw new RuntimeException(ex);
+            if (l.getLength()==0){
+                res = "El lugar indicado no perteneció al reino en ningun momento\n";
+            }
+            return res;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
         }
-        return "El lugar indicado no perteneció al reino en ningun momento";
     }
 }

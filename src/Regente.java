@@ -2,9 +2,14 @@ package src;
 
 import java.io.Serializable;
 
-public class Regente extends Persona implements Serializable {
+public class Regente implements Serializable {
+    private String nombreCompleto;
+    private String curiosidad;
+    private String nacimiento;
     private String apodo;
 
+    private Genero genero;
+    private Dinastia dinastia;
     private String inicioReinado;
     private String finReinado;
 
@@ -16,7 +21,11 @@ public class Regente extends Persona implements Serializable {
     private boolean Leon;
 
     public Regente(String nombreCompleto, String apodo, String nacimiento, Genero genero, Dinastia dinastia) {
-        super(nombreCompleto, apodo, nacimiento, genero, dinastia);
+        this.nombreCompleto = nombreCompleto;
+        this.curiosidad = "";
+        this.nacimiento = nacimiento;
+        this.genero = genero;
+        this.dinastia = dinastia;
         this.apodo = apodo;
         this.inicioReinado = "";
         this.finReinado = "";
@@ -30,7 +39,11 @@ public class Regente extends Persona implements Serializable {
     }
 
     public Regente(String nombreCompleto, String curiosidad, String nacimiento, Genero genero, Dinastia dinastia, String apodo, String finReinado, String inicioReinado, boolean laRioja, boolean bajaNavarra, boolean francia, boolean aragon, boolean leon, boolean castilla) {
-        super(nombreCompleto, curiosidad, nacimiento, genero, dinastia);
+        this.nombreCompleto = nombreCompleto;
+        this.curiosidad = curiosidad;
+        this.nacimiento = nacimiento;
+        this.genero = genero;
+        this.dinastia = dinastia;
         this.apodo = apodo;
         this.finReinado = finReinado;
         this.inicioReinado = inicioReinado;
@@ -42,6 +55,30 @@ public class Regente extends Persona implements Serializable {
         Castilla = castilla;
     }
 
+
+    public String getNombreCompleto() {
+        return nombreCompleto;
+    }
+
+    public String getCuriosidad() {
+        return curiosidad;
+    }
+
+    public String getNacimiento() {
+        return nacimiento;
+    }
+
+    public Dinastia getDinastia() {
+        return dinastia;
+    }
+
+    public Genero getGenero() {
+        return genero;
+    }
+
+    public void setCuriosidad(String curiosidad) {
+        this.curiosidad = curiosidad;
+    }
     public String getApodo() {
         return apodo;
     }

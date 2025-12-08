@@ -4,7 +4,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.util.List;
 
 public class BuscaDinastias extends Thread{
     private Dinastia dinastia;
@@ -23,11 +22,13 @@ public class BuscaDinastias extends Thread{
 
     public void run(){
         NodeList hijos;
-        Node e, n;
+        Element e;
+        Node n;
         String nombre="", apodo="";
         for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getTextContent().equals(dinastia)){
-                e = (Element) l.item(i).getParentNode();
+            e = (Element) l.item(i);
+
+            if (e.getAttribute("dinastia").equals(dinastia.toString())){
                 hijos = e.getChildNodes();
                 for (int j = 0; j < hijos.getLength(); j++) {
                     n   =  hijos.item(j);
@@ -38,7 +39,7 @@ public class BuscaDinastias extends Thread{
                         apodo = n.getTextContent();
                     }
                 }
-                res = res + nombre + apodo + "\n";
+                res = res + nombre + " " + apodo + "\n";
             }
         }
     }
